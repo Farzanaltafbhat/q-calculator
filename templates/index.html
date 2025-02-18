@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Q Function Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white">
+                <h2 class="text-center">Q Function Calculator</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Select Calculation Type</label>
+                        <select class="form-select" name="mode" id="modeSelect" required>
+                            <option value="">Choose...</option>
+                            <option value="Q(x)" {% if request.method == 'POST' and mode == 'Q(x)' %}selected{% endif %}>Q(x) - Calculate Q function</option>
+                            <option value="Q^-1(y)" {% if request.method == 'POST' and mode == 'Q^-1(y)' %}selected{% endif %}>Q⁻¹(y) - Inverse Q function</option>
+                            <option value="Find x for Pb" {% if request.method == 'POST' and mode == 'Find x for Pb' %}selected{% endif %}>Find x for Bit Error Rate (Pb)</option>
+                        </select>
+                    </div>
+
+                    <!-- Dynamic Input Fields -->
+                    <div id="inputFields">
+                        <!-- Fields will be populated by JavaScript -->
+                    </div>
+
+                    {% if error %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                    {% endif %}
+
+                    {% if result is not none %}
+                    <div class="alert alert-success">
+                        <h4 class="alert-heading">Result</h4>
+                        <p class="mb-0">{{ "%.8f"|format(result) }}</p>
+                    </div>
+                    {% endif %}
+
+                    <button type="submit" class="btn btn-primary w-100 mt-3">Calculate</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modeSelect = document.getElementById('modeSelect');
+        const inputFields = document.getElementById('inputFields');
+        
+        const fieldTemplates = {
+            'Q(x)': `
+                <div class="mb-3">
+                    <label class="form-label">Enter x value</label>
+                    <input type="number" step="any" class="form-control" name="x_value" 
+                           value="{{ x_value if x_value is not none }}" required>
+                </div>
+            `,
+            'Q^-1(y)': `
+                <div class="mb-3">
+                    <label class="form-label">Enter Q value (0 < y < 1)</label>
+                    <input type="number" step="any" class="form-control" name="q_value" 
+                           value="{{ q_value if q_value is not none }}" required>
+                </div>
+            `,
+            'Find x for Pb': `
+                <div class="mb-3">
+                    <label class="form-label">Enter Pb value (0 < Pb < 1)</label>
+                    <input type="number" step="any" class="form-control" name="pb_value" 
+                           value="{{ pb_value if pb_value is not none }}" required>
+                </div>
+            `
+        };
+
+        function updateInputFields() {
+            const mode = modeSelect.value;
+            inputFields.innerHTML = fieldTemplates[mode] || '';
+        }
+
+        modeSelect.addEventListener('change', updateInputFields);
+        window.addEventListener('load', updateInputFields);
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
